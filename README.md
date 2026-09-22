@@ -26,8 +26,6 @@ The application combines clinical data 📋, machine learning models 📊, and a
 
 <img width="1902" height="882" alt="image" src="https://github.com/user-attachments/assets/d33cb882-a834-4c28-998b-deb44ec53938" />
 
-<img width="1872" height="892" alt="image" src="https://github.com/user-attachments/assets/791628c0-91dd-401a-b6ac-a7684ea2b929" />
-
 
 
 🧠 Machine Learning
@@ -54,6 +52,10 @@ The CardioAI dashboard provides a centralized view of:
 📝 Previous assessments
 📊 Model-related information
 🔐 Authentication & User Management
+
+
+<img width="1872" height="892" alt="image" src="https://github.com/user-attachments/assets/791628c0-91dd-401a-b6ac-a7684ea2b929" />
+
 
 CardioAI includes a user authentication system with:
 
