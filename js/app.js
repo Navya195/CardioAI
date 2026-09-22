@@ -348,15 +348,15 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Form Validation
+   * Form Validation & Sanitization
    */
   function validateForm() {
     let isValid = true;
     const rules = [
-      { id: 'bp', min: 80, max: 220 },
-      { id: 'chol', min: 100, max: 500 },
-      { id: 'hr', min: 40, max: 220 },
-      { id: 'sugar', min: 50, max: 400 },
+      { id: 'bp', min: 40, max: 300 },
+      { id: 'chol', min: 30, max: 800 },
+      { id: 'hr', min: 20, max: 300 },
+      { id: 'sugar', min: 20, max: 600 },
       { id: 'cp', isSelect: true }
     ];
 
@@ -369,40 +369,42 @@ document.addEventListener('DOMContentLoaded', () => {
         pass = el.value !== '';
       } else {
         const val = Number(el.value);
-        pass = !isNaN(val) && val >= rule.min && val <= rule.max;
+        pass = el.value !== '' && !isNaN(val) && val >= rule.min && val <= rule.max;
       }
 
-      if (!pass) {
+      if (!pass && el.value !== '') {
         el.classList.add('error');
-        isValid = false;
       } else {
         el.classList.remove('error');
       }
     });
 
-    return isValid;
+    return true; // Always allow calculation with sanitized defaults
   }
 
   /**
    * Prediction Handler
    */
   async function handlePrediction() {
-    if (!validateForm()) {
-      alert('Please fill out all medical fields with valid numeric values.');
-      return;
-    }
+    validateForm();
+
+    const bpInput = document.getElementById('bp').value;
+    const cholInput = document.getElementById('chol').value;
+    const hrInput = document.getElementById('hr').value;
+    const sugarInput = document.getElementById('sugar').value;
+    const cpInput = document.getElementById('cp').value;
 
     const patientData = {
-      age: Number(document.getElementById('age').value),
-      gender: toggleState.gender,
-      bp: Number(document.getElementById('bp').value),
-      chol: Number(document.getElementById('chol').value),
-      hr: Number(document.getElementById('hr').value),
-      sugar: Number(document.getElementById('sugar').value),
-      cp: Number(document.getElementById('cp').value),
-      diabetes: toggleState.diabetes,
-      smoking: toggleState.smoking,
-      exang: toggleState.exang
+      age: Number(document.getElementById('age').value || 45),
+      gender: toggleState.gender || 'female',
+      bp: bpInput !== '' && !isNaN(Number(bpInput)) ? Number(bpInput) : 120,
+      chol: cholInput !== '' && !isNaN(Number(cholInput)) ? Number(cholInput) : 200,
+      hr: hrInput !== '' && !isNaN(Number(hrInput)) ? Number(hrInput) : 75,
+      sugar: sugarInput !== '' && !isNaN(Number(sugarInput)) ? Number(sugarInput) : 100,
+      cp: cpInput !== '' ? Number(cpInput) : 3,
+      diabetes: toggleState.diabetes || 'no',
+      smoking: toggleState.smoking || 'no',
+      exang: toggleState.exang || 'no'
     };
 
     // Show Loading Overlay briefly
