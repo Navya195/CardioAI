@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CardioAI — Clinical Heart Disease Risk Prediction System</title>
+  <meta name="description" content="AI-powered clinical heart disease prediction system utilizing machine learning models to assess cardiovascular risk." />
+  
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <!-- External Chart.js Library -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Custom Modular Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- LOGIN / REGISTER / FORGOT PASSWORD MODAL OVERLAY -->
+  <div id="loginModal" style="display:flex; position:fixed; inset:0; z-index:10000; background:rgba(15,3,25,0.92); backdrop-filter:blur(16px); align-items:center; justify-content:center; padding:20px;">
+    <div style="background:#ffffff; width:100%; max-width:460px; border-radius:var(--radius-lg); padding:36px; box-shadow:0 25px 60px rgba(0,0,0,0.5); border:1px solid var(--border); position:relative;">
+      <div style="text-align:center; margin-bottom:20px;">
+        <div class="brand-heart-badge" style="margin:0 auto 10px; width:44px; height:44px; font-size:1.1rem;"><i class="fa-solid fa-heart-pulse"></i></div>
+        <h2 style="font-family:'DM Serif Display',serif; color:var(--navy); font-size:1.75rem;" id="authModalTitle">Clinical Access Portal</h2>
+        <p style="color:var(--text-muted); font-size:0.85rem; margin-top:2px;">CardioAI Heart Disease Risk Assessment System</p>
+      </div>
+
+      <!-- Auth Navigation Tabs -->
+      <div style="display:flex; background:var(--bg-main); border-radius:var(--radius-md); padding:4px; margin-bottom:24px; border:1px solid var(--border);">
+        <button type="button" class="auth-tab active" data-target="loginFormView" style="flex:1; padding:8px; border:none; background:#ffffff; color:var(--navy); font-weight:700; font-size:0.82rem; border-radius:var(--radius-sm); cursor:pointer; box-shadow:var(--shadow-sm);"><i class="fa-solid fa-right-to-bracket"></i> Sign In</button>
+        <button type="button" class="auth-tab" data-target="registerFormView" style="flex:1; padding:8px; border:none; background:none; color:var(--text-muted); font-weight:600; font-size:0.82rem; border-radius:var(--radius-sm); cursor:pointer;"><i class="fa-solid fa-user-plus"></i> Register</button>
+        <button type="button" class="auth-tab" data-target="forgotFormView" style="flex:1; padding:8px; border:none; background:none; color:var(--text-muted); font-weight:600; font-size:0.82rem; border-radius:var(--radius-sm); cursor:pointer;"><i class="fa-solid fa-key"></i> Reset</button>
+      </div>
+
+      <!-- VIEW 1: SIGN IN FORM -->
+      <div id="loginFormView">
+        <!-- Demo Credentials Quick-Fill Alert -->
+        <div style="background:#fff0f0; border:1px solid #fca5a5; border-radius:var(--radius-md); padding:12px; margin-bottom:20px; font-size:0.8rem;">
+          <div style="font-weight:700; color:var(--crimson); margin-bottom:6px;"><i class="fa-solid fa-key"></i> Demo Credentials (Click to Quick-Fill):</div>
+          <div style="display:flex; flex-direction:column; gap:6px;">
+            <button type="button" id="btnFillDoctor" style="background:#ffffff; border:1px solid #fca5a5; padding:6px 10px; border-radius:6px; text-align:left; cursor:pointer; font-size:0.78rem; color:var(--navy);">
+              🩺 <strong>Doctor:</strong> dr.smith@cardioai.med / cardio2025
+            </button>
+            <button type="button" id="btnFillAdmin" style="background:#ffffff; border:1px solid #fca5a5; padding:6px 10px; border-radius:6px; text-align:left; cursor:pointer; font-size:0.78rem; color:var(--navy);">
+              ⚙️ <strong>Admin:</strong> admin@cardioai.med / admin2025
+            </button>
+          </div>
+        </div>
+
+        <form id="loginForm">
+          <div style="margin-bottom:16px;">
+            <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--navy); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;"><i class="fa-solid fa-envelope"></i> Email Address</label>
+            <input type="email" id="loginEmail" class="form-control" style="width:100%;" placeholder="e.g. dr.smith@cardioai.med" required />
+          </div>
+
+          <div style="margin-bottom:20px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+              <label style="font-size:0.78rem; font-weight:700; color:var(--navy); text-transform:uppercase; letter-spacing:0.06em;"><i class="fa-solid fa-lock"></i> Password</label>
+              <a href="#" id="linkForgot" style="font-size:0.78rem; color:var(--crimson); text-decoration:none; font-weight:600;">Forgot Password?</a>
+            </div>
+            <input type="password" id="loginPassword" class="form-control" style="width:100%;" placeholder="••••••••" required />
+          </div>
+
+          <div id="loginError" style="display:none; color:var(--crimson); font-size:0.85rem; font-weight:600; margin-bottom:16px; text-align:center;"></div>
+
+          <button type="submit" class="btn-predict" style="width:100%; justify-content:center; padding:12px;"><i class="fa-solid fa-right-to-bracket"></i> Sign In to Dashboard</button>
+        </form>
+      </div>
+
+      <!-- VIEW 2: CREATE ACCOUNT FORM -->
+      <div id="registerFormView" style="display:none;">
+        <form id="registerForm">
+          <div style="margin-bottom:14px;">
+            <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--navy); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;"><i class="fa-solid fa-user"></i> Full Name</label>
+            <input type="text" id="regName" class="form-control" style="width:100%;" placeholder="e.g. Dr. Jane Doe" required />
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--navy); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;"><i class="fa-solid fa-envelope"></i> Clinical Email</label>
+            <input type="email" id="regEmail" class="form-control" style="width:100%;" placeholder="e.g. j.doe@hospital.org" required />
+          </div>
+
+          <div style="margin-bottom:14px;">
+            <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--navy); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;"><i class="fa-solid fa-stethoscope"></i> Professional Role</label>
+            <select id="regRole" class="form-control" style="width:100%;">
+              <option value="Cardiologist">Cardiologist / Heart Specialist</option>
+              <option value="General Practitioner">General Practitioner (GP)</option>
+              <option value="Nurse Practitioner">Nurse Practitioner</option>
+              <option value="Clinical Researcher">Clinical Researcher</option>
+            </select>
+          </div>
+
+          <div style="margin-bottom:18px;">
+            <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--navy); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:4px;"><i class="fa-solid fa-lock"></i> Set Password</label>
+            <input type="password" id="regPassword" class="form-control" style="width:100%;" placeholder="••••••••" required />
+          </div>
+
+          <div id="regMsg" style="display:none; font-size:0.85rem; font-weight:600; margin-bottom:14px; text-align:center;"></div>
+
+          <button type="submit" class="btn-predict" style="width:100%; justify-content:center; padding:12px;"><i class="fa-solid fa-user-plus"></i> Create Practitioner Account</button>
+        </form>
+      </div>
+
+      <!-- VIEW 3: FORGOT PASSWORD FORM -->
+      <div id="forgotFormView" style="display:none;">
+        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:18px; line-height:1.5;">Enter your registered clinical email address below to receive password reset instructions.</p>
+        <form id="forgotForm">
+          <div style="margin-bottom:20px;">
+            <label style="display:block; font-size:0.78rem; font-weight:700; color:var(--navy); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px;"><i class="fa-solid fa-envelope"></i> Clinical Email</label>
+            <input type="email" id="forgotEmail" class="form-control" style="width:100%;" placeholder="e.g. dr.smith@cardioai.med" required />
+          </div>
+
+          <div id="forgotMsg" style="display:none; font-size:0.85rem; font-weight:600; margin-bottom:16px; padding:10px; border-radius:var(--radius-sm); text-align:center;"></div>
+
+          <button type="submit" class="btn-predict" style="width:100%; justify-content:center; padding:12px;"><i class="fa-solid fa-paper-plane"></i> Send Password Reset Link</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- LOADING OVERLAY -->
+  <div class="loading-overlay" id="loadingOverlay" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(18,3,15,0.8); backdrop-filter:blur(8px); align-items:center; justify-content:center; flex-direction:column; gap:16px;">
+    <div style="font-size:3.5rem; animation: pulse-badge 1s infinite;">❤️</div>
+    <div style="color:#ffffff; font-size:1.1rem; font-weight:600;">Evaluating Clinical Machine Learning Model…</div>
+  </div>
+
+  <!-- USER PROFILE MODAL OVERLAY -->
+  <div id="userProfileModal" style="display:none; position:fixed; inset:0; z-index:10001; background:rgba(15,3,25,0.75); backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:20px;">
+    <div style="background:#ffffff; width:100%; max-width:400px; border-radius:var(--radius-lg); padding:32px; box-shadow:0 20px 50px rgba(0,0,0,0.4); border:1px solid var(--border); text-align:center; position:relative;">
+      <button type="button" id="btnCloseProfileModal" style="position:absolute; top:16px; right:16px; background:none; border:none; font-size:1.2rem; color:var(--text-muted); cursor:pointer;"><i class="fa-solid fa-xmark"></i></button>
+
+      <div style="width:64px; height:64px; background:var(--gradient-brand); border-radius:50%; display:flex; align-items:center; justify-content:center; color:#ffffff; font-size:1.8rem; margin:0 auto 16px; box-shadow:0 4px 14px rgba(192,0,26,0.3);">
+        <i class="fa-solid fa-user-doctor"></i>
+      </div>
+
+      <h3 style="font-family:'DM Serif Display',serif; font-size:1.5rem; color:var(--navy); margin-bottom:4px;" id="profileModalName">Dr. Alexander Smith</h3>
+      <span style="display:inline-block; background:#fff0f0; border:1px solid #fca5a5; color:var(--crimson); font-size:0.78rem; font-weight:700; padding:4px 12px; border-radius:100px; margin-bottom:20px;" id="profileModalRole">Senior Cardiologist</span>
+
+      <div style="background:var(--bg-main); border-radius:var(--radius-md); padding:16px; border:1px solid var(--border); text-align:left; font-size:0.85rem; margin-bottom:24px; display:flex; flex-direction:column; gap:10px;">
+        <div><strong>Email:</strong> <span id="profileModalEmail" style="color:var(--text-muted);">dr.smith@cardioai.med</span></div>
+        <div><strong>Status:</strong> <span style="color:#166534; font-weight:700;">🟢 Active Practitioner Session</span></div>
+        <div><strong>Permissions:</strong> Full Clinical ML Screening Access</div>
+      </div>
+
+      <div style="display:flex; gap:12px;">
+        <button type="button" id="btnProfileLogout" class="btn-reset" style="flex:1; padding:10px; font-size:0.88rem; background:#fee2e2; color:var(--crimson-dark); border-color:#fca5a5;"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+        <button type="button" id="btnProfileClose" class="btn-primary" style="flex:1; padding:10px; font-size:0.88rem; justify-content:center;">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- NAVIGATION BAR -->
+  <nav id="navbar">
+    <a href="#home" class="nav-brand">
+      <div class="brand-heart-badge"><i class="fa-solid fa-heart-pulse"></i></div>
+      CardioAI
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#home" class="active">Home</a></li>
+      <li><a href="#about">About</a></li>
+      <li><a href="#prediction">Risk Assessment</a></li>
+      <li><a href="#models">ML Models</a></li>
+      <li><a href="#history-section">History</a></li>
+      <li id="navUserBadge" style="display:none; align-items:center; gap:8px; font-size:0.85rem; font-weight:600; color:var(--navy); padding:6px 14px; background:#fff0f0; border:1px solid #fca5a5; border-radius:var(--radius-sm); cursor:pointer; transition:all 0.2s ease;">
+        <i class="fa-solid fa-user-doctor" style="color:var(--crimson);"></i> <span id="navUserName">Dr. Smith</span> <i class="fa-solid fa-chevron-down" style="font-size:0.7rem; color:var(--crimson); margin-left:2px;"></i>
+      </li>
+      <li><button type="button" id="btnLogout" style="display:none; background:none; border:1px solid var(--border); padding:6px 12px; border-radius:var(--radius-sm); color:var(--crimson); font-weight:600; font-size:0.82rem; cursor:pointer;"><i class="fa-solid fa-right-from-bracket"></i> Logout</button></li>
+      <li><a href="#prediction" class="nav-cta">Run Check</a></li>
+    </ul>
+    <button class="hamburger" id="hamburger" aria-label="Toggle navigation"><i class="fa-solid fa-bars"></i></button>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <section id="home">
+    <canvas id="heroCanvas"></canvas>
+
+    <!-- Central SVG Beating Heart Overlay -->
+    <div class="hero-overlay-heart">
+      <svg viewBox="0 0 720 540" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:auto; overflow:visible;">
+        <g style="transform-origin:360px 310px;">
+          <path d="M360 490 C360 490 100 360 100 195 C100 118 155 68 218 68 C270 68 318 100 360 145 C402 100 450 68 502 68 C565 68 620 118 620 195 C620 360 360 490 360 490Z" fill="#8b0000" opacity="0.45" transform="translate(8,12)"/>
+          <path d="M360 490 C360 490 100 360 100 195 C100 118 155 68 218 68 C270 68 318 100 360 145 C402 100 450 68 502 68 C565 68 620 118 620 195 C620 360 360 490 360 490Z" fill="#e8192c"/>
+          <ellipse cx="268" cy="168" rx="78" ry="46" fill="white" opacity="0.18" transform="rotate(-30 268 168)"/>
+        </g>
+        <polyline points="0,270 80,270 95,258 105,282 115,270 148,270 158,265 165,275 172,270 205,270 218,218 236,130 250,390 263,178 276,270 320,270 338,225 355,205 372,248 390,270 420,270 435,258 445,282 455,270 488,270 498,265 505,275 512,270 545,270 558,218 576,130 590,390 603,178 616,270 660,270 678,225 695,205 712,248 720,270" fill="none" stroke="white" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" style="filter:drop-shadow(0 0 8px rgba(255,255,255,0.9));"/>
+        <line x1="0" y1="270" x2="720" y2="270" stroke="#e8192c" stroke-width="2.5" opacity="0.6"/>
+      </svg>
+    </div>
+
+    <div class="max-w hero-content">
+      <div>
+        <div class="hero-tag"><i class="fa-solid fa-microchip"></i> Clinical Machine Learning Tool</div>
+        <h1 class="hero-title">Predict Cardiovascular Risk <span>Using AI</span></h1>
+        <p class="hero-sub">CardioAI evaluates key physiological parameters using multi-algorithm Machine Learning models trained on clinical datasets to deliver fast, explainable risk assessments.</p>
+        <div class="hero-actions">
+          <a href="#prediction" class="btn-primary"><i class="fa-solid fa-stethoscope"></i> Start Risk Assessment</a>
+          <a href="#about" class="btn-outline"><i class="fa-solid fa-book-medical"></i> View Clinical Study</a>
+        </div>
+        <div class="hero-stats">
+          <div><span class="stat-number">92%</span><span class="stat-label">Model Accuracy</span></div>
+          <div><span class="stat-number">4</span><span class="stat-label">ML Algorithms</span></div>
+          <div><span class="stat-number">7</span><span class="stat-label">Vitals Analysed</span></div>
+        </div>
+      </div>
+
+      <!-- Live Interactive Monitor Card -->
+      <div class="monitor-card">
+        <div class="monitor-header">
+          <div class="monitor-title"><i class="fa-solid fa-heart-pulse" style="color:#fda4af;"></i> Live Cardiac Monitor</div>
+          <div class="status-dot"></div>
+        </div>
+        <canvas id="miniEcg"></canvas>
+        <div class="vitals-grid">
+          <div class="vital-box"><span class="val" id="bpmDisplay">72</span><span class="lbl">BPM Rate</span></div>
+          <div class="vital-box"><span class="val">120/80</span><span class="lbl">BP (mmHg)</span></div>
+          <div class="vital-box"><span class="val">98%</span><span class="lbl">SpO₂</span></div>
+          <div class="vital-box"><span class="val">36.6°C</span><span class="lbl">Body Temp</span></div>
+        </div>
+        <div class="bpm-control" style="display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; align-items:center; gap:14px; width:100%;">
+            <span><i class="fa-solid fa-gauge-high"></i> Simulate BPM:</span>
+            <input type="range" min="50" max="160" value="72" oninput="window.ECGEngine && window.ECGEngine.setBPM(this.value)" />
+          </div>
+          <button type="button" id="btnSoundToggle" onclick="window.ECGEngine && window.ECGEngine.toggleSound()" style="background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.2); color:#ffffff; padding:6px 14px; border-radius:var(--radius-sm); font-size:0.8rem; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:8px; width:fit-content; transition:all 0.2s;">
+            <i class="fa-solid fa-volume-xmark"></i> Sound: OFF
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT SECTION -->
+  <section id="about">
+    <div class="max-w about-grid">
+      <div>
+        <span class="section-tag"><i class="fa-solid fa-circle-info"></i> Clinical Foundation</span>
+        <h2 class="section-title">Empowering Early Detection with AI</h2>
+        <p class="section-desc">Cardiovascular disease remains the leading cause of global mortality. Machine learning enables proactive risk profiling prior to symptom manifestation.</p>
+
+        <div class="feature-cards">
+          <div class="feat-card">
+            <div class="feat-icon-box"><i class="fa-solid fa-brain"></i></div>
+            <div>
+              <div class="feat-title">Multi-Model Ensemble Engine</div>
+              <div class="feat-text">Select between Random Forest, Support Vector Machine, Logistic Regression, and Decision Tree classifiers.</div>
+            </div>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon-box"><i class="fa-solid fa-chart-column"></i></div>
+            <div>
+              <div class="feat-title">SHAP Feature Explainability</div>
+              <div class="feat-text">View transparent mathematical breakdowns showing how each physiological input influences your risk outcome.</div>
+            </div>
+          </div>
+          <div class="feat-card">
+            <div class="feat-icon-box"><i class="fa-solid fa-file-pdf"></i></div>
+            <div>
+              <div class="feat-title">Exportable Clinical Reports</div>
+              <div class="feat-text">Download formatted clinical summary PDF reports for medical doctor consultations.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-card">
+        <div class="chart-header">
+          <span><i class="fa-solid fa-chart-pie" style="color:var(--crimson);"></i> Risk Factor Impact Distribution</span>
+          <span style="font-size:0.8rem; color:var(--text-muted);">Cleveland Dataset</span>
+        </div>
+        <canvas id="riskFactorChart" height="260"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- PREDICTION FORM SECTION -->
+  <section id="prediction">
+    <div class="max-w">
+      <div style="text-align: center; margin-bottom: 40px;">
+        <span class="section-tag"><i class="fa-solid fa-vial-virus"></i> Patient Screening</span>
+        <h2 class="section-title">Clinical Risk Assessment Form</h2>
+        <p class="section-desc" style="margin: 0 auto;">Input key patient vitals below for real-time machine learning prediction.</p>
+      </div>
+
+      <div class="predictor-container">
+        <div class="predictor-header">
+          <div>
+            <h2><i class="fa-solid fa-id-card-clip"></i> Patient Vitals Entry</h2>
+            <p>Data processed strictly in-browser or via optional local Flask API.</p>
+          </div>
+
+          <!-- Model Picker Selector -->
+          <div class="model-picker">
+            <button class="model-tab active" data-algo="rf"><i class="fa-solid fa-tree"></i> Random Forest (92%)</button>
+            <button class="model-tab" data-algo="svm"><i class="fa-solid fa-vector-square"></i> SVM (89%)</button>
+            <button class="model-tab" data-algo="lr"><i class="fa-solid fa-chart-line"></i> Logistic Reg (85%)</button>
+            <button class="model-tab" data-algo="dt"><i class="fa-solid fa-diagram-project"></i> Decision Tree (81%)</button>
+          </div>
+        </div>
+
+        <div class="form-body">
+          <!-- Preset Profiles Toolbar -->
+          <div style="display:flex; align-items:center; gap:12px; margin-bottom:28px; flex-wrap:wrap; background:var(--bg-main); padding:12px 18px; border-radius:var(--radius-md); border:1px solid var(--border);">
+            <span style="font-size:0.82rem; font-weight:700; color:var(--navy); text-transform:uppercase; letter-spacing:0.06em;"><i class="fa-solid fa-user-gear"></i> Quick Patient Presets:</span>
+            <button type="button" class="btn-preset" data-preset="healthy" style="padding:6px 14px; border-radius:100px; border:1px solid #bbf7d0; background:#f0fdf4; color:#166534; font-size:0.82rem; font-weight:600; cursor:pointer;"><i class="fa-solid fa-circle-check"></i> Healthy Adult (30y)</button>
+            <button type="button" class="btn-preset" data-preset="moderate" style="padding:6px 14px; border-radius:100px; border:1px solid #fde68a; background:#fffbeb; color:#92400e; font-size:0.82rem; font-weight:600; cursor:pointer;"><i class="fa-solid fa-triangle-exclamation"></i> Moderate Risk (54y)</button>
+            <button type="button" class="btn-preset" data-preset="high" style="padding:6px 14px; border-radius:100px; border:1px solid #fecaca; background:#fef2f2; color:#991b1b; font-size:0.82rem; font-weight:600; cursor:pointer;"><i class="fa-solid fa-circle-exclamation"></i> High Risk Profile (68y)</button>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>
+                <span><i class="fa-solid fa-calendar"></i> Age (years)</span>
+                <span id="ageVal" style="color:var(--crimson); font-size:0.9rem;">45</span>
+              </label>
+              <input type="range" id="age" min="20" max="90" value="45" />
+            </div>
+
+            <div class="form-group">
+              <label><i class="fa-solid fa-venus-mars"></i> Gender</label>
+              <div class="toggle-selector">
+                <button type="button" class="toggle-option active" data-field="gender" data-val="male">♂ Male</button>
+                <button type="button" class="toggle-option" data-field="gender" data-val="female">♀ Female</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label><i class="fa-solid fa-gauge-high"></i> Systolic BP (mmHg) <i class="fa-solid fa-circle-info tooltip-icon" title="Resting blood pressure in mmHg (Normal < 120)"></i></label>
+              <input type="number" id="bp" class="form-control" placeholder="e.g. 120" min="80" max="220" />
+            </div>
+
+            <div class="form-group">
+              <label><i class="fa-solid fa-droplet"></i> Serum Cholesterol (mg/dL)</label>
+              <input type="number" id="chol" class="form-control" placeholder="e.g. 210" min="100" max="500" />
+            </div>
+
+            <div class="form-group">
+              <label><i class="fa-solid fa-heart-pulse"></i> Max Heart Rate Achieved (bpm)</label>
+              <input type="number" id="hr" class="form-control" placeholder="e.g. 150" min="40" max="220" />
+            </div>
+
+            <div class="form-group">
+              <label><i class="fa-solid fa-vial"></i> Fasting Blood Sugar (mg/dL)</label>
+              <input type="number" id="sugar" class="form-control" placeholder="e.g. 100" min="50" max="400" />
+            </div>
+
+            <div class="form-group">
+              <label><i class="fa-solid fa-syringe"></i> Diabetes Diagnosis</label>
+              <div class="toggle-selector">
+                <button type="button" class="toggle-option active" data-field="diabetes" data-val="no">No</button>
+                <button type="button" class="toggle-option" data-field="diabetes" data-val="yes">Yes</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label><i class="fa-solid fa-smoking"></i> Tobacco Smoking</label>
+              <div class="toggle-selector">
+                <button type="button" class="toggle-option active" data-field="smoking" data-val="no">No</button>
+                <button type="button" class="toggle-option" data-field="smoking" data-val="yes">Yes</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label><i class="fa-solid fa-lungs"></i> Chest Pain Type</label>
+              <select id="cp" class="form-control">
+                <option value="">-- Select Pain Classification --</option>
+                <option value="0">Typical Angina (Anginal pain on exertion)</option>
+                <option value="1">Atypical Angina (Atypical chest discomfort)</option>
+                <option value="2">Non-Anginal Pain (Musculoskeletal / Non-cardiac)</option>
+                <option value="3">Asymptomatic (No chest discomfort)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label><i class="fa-solid fa-person-running"></i> Exercise-Induced Angina</label>
+              <div class="toggle-selector">
+                <button type="button" class="toggle-option active" data-field="exang" data-val="no">No</button>
+                <button type="button" class="toggle-option" data-field="exang" data-val="yes">Yes</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-predict" id="btnPredict"><i class="fa-solid fa-wand-magic-sparkles"></i> Compute AI Risk Score</button>
+            <button type="button" class="btn-reset" id="btnReset"><i class="fa-solid fa-arrow-rotate-left"></i> Clear Inputs</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- EVALUATION RESULTS CARD -->
+      <div id="result-section">
+        <div class="result-card" id="resultCard">
+          <div class="result-banner">
+            <span class="result-icon" id="resultIcon">🫀</span>
+            <div class="result-level" id="resultLevel">Low Risk</div>
+            <div class="result-subtitle" id="resultSub">Your physiological parameters are within healthy thresholds.</div>
+          </div>
+
+          <div class="result-body">
+            <div class="metrics-summary">
+              <div class="metric-card"><span class="metric-val" id="mScore">14%</span><span class="metric-lbl">Risk Probability</span></div>
+              <div class="metric-card"><span class="metric-val" id="mConf">91%</span><span class="metric-lbl">Model Confidence</span></div>
+              <div class="metric-card"><span class="metric-val" id="mFactors">1/7</span><span class="metric-lbl">Elevated Vitals</span></div>
+              <div class="metric-card"><span class="metric-val" id="mAlgo">RF</span><span class="metric-lbl">Evaluator Model</span></div>
+            </div>
+
+            <!-- SHAP Explainability Chart -->
+            <div class="shap-container">
+              <div class="shap-title">
+                <span><i class="fa-solid fa-scale-balanced" style="color:var(--crimson);"></i> Feature Risk Drivers (SHAP Analysis)</span>
+                <span style="font-size:0.8rem; font-weight:normal; color:var(--text-muted);">Impact per input vital</span>
+              </div>
+              <canvas id="shapChart" height="140"></canvas>
+            </div>
+
+            <!-- Clinical Vitals Benchmark Table vs AHA Standards -->
+            <div style="background:var(--bg-main); border-radius:var(--radius-md); padding:24px; border:1px solid var(--border); margin-bottom:32px;">
+              <h4 style="font-size:1rem; font-weight:700; color:var(--navy); margin-bottom:16px; display:flex; align-items:center; gap:10px;">
+                <i class="fa-solid fa-clipboard-check" style="color:var(--crimson);"></i> Clinical Vitals vs AHA Target Guidelines
+              </h4>
+              <div style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; font-size:0.88rem; text-align:left;">
+                  <thead>
+                    <tr style="border-bottom:2px solid var(--border); color:var(--navy);">
+                      <th style="padding:10px;">Vitals Parameter</th>
+                      <th style="padding:10px;">Patient Input</th>
+                      <th style="padding:10px;">AHA Normal Threshold</th>
+                      <th style="padding:10px;">Clinical Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="ahaBenchmarkBody">
+                    <!-- Populated via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Multi-Model Comparison Card -->
+            <div style="background:#f8fafc; border-radius:var(--radius-md); padding:24px; border:1px solid var(--border); margin-bottom:32px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+                <h4 style="font-size:1rem; font-weight:700; color:var(--navy); margin:0;">
+                  <i class="fa-solid fa-layer-group" style="color:var(--crimson);"></i> Multi-Algorithm Predictions Comparison
+                </h4>
+                <button type="button" id="btnCompareModels" style="background:var(--navy); color:#ffffff; border:none; padding:8px 16px; border-radius:var(--radius-sm); font-size:0.82rem; font-weight:600; cursor:pointer;">
+                  <i class="fa-solid fa-chart-simple"></i> Evaluate All 4 Models
+                </button>
+              </div>
+              <div id="multiModelComparisonView" style="display:none; margin-top:16px;">
+                <canvas id="multiModelChart" height="150"></canvas>
+              </div>
+            </div>
+
+            <!-- Recommendations -->
+            <div class="result-advice">
+              <h4><i class="fa-solid fa-lightbulb"></i> Clinical Guidance & Next Steps</h4>
+              <ul id="adviceList"></ul>
+            </div>
+
+            <div class="result-footer-actions">
+              <button type="button" class="btn-primary" id="btnExportReport"><i class="fa-solid fa-file-pdf"></i> Download PDF Medical Report</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MACHINE LEARNING ALGORITHMS SECTION -->
+  <section id="models">
+    <div class="max-w">
+      <div style="text-align: center;">
+        <span class="section-tag"><i class="fa-solid fa-microchip"></i> Algorithm Suite</span>
+        <h2 class="section-title">Trained Machine Learning Classifiers</h2>
+        <p class="section-desc" style="margin: 0 auto;">Evaluated on the UCI Cleveland Heart Disease Dataset using 10-fold cross-validation.</p>
+      </div>
+
+      <div class="algo-grid">
+        <div class="algo-card">
+          <div class="algo-icon"><i class="fa-solid fa-tree"></i></div>
+          <div class="algo-title">Random Forest Classifier</div>
+          <div class="algo-desc">An ensemble of 100 decision trees. Reduces variance and over-fitting through bootstrap aggregation and feature subspace sampling.</div>
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:700; margin-bottom:6px;">
+              <span>Accuracy</span><span>92.4%</span>
+            </div>
+            <div style="height:6px; background:var(--border); border-radius:3px;"><div class="acc-fill" style="width:92.4%;"></div></div>
+          </div>
+        </div>
+
+        <div class="algo-card">
+          <div class="algo-icon"><i class="fa-solid fa-vector-square"></i></div>
+          <div class="algo-title">Support Vector Machine (SVM)</div>
+          <div class="algo-desc">Optimizes a maximum-margin hyperplane in high-dimensional kernel space to maximize class separation boundary.</div>
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:700; margin-bottom:6px;">
+              <span>Accuracy</span><span>89.1%</span>
+            </div>
+            <div style="height:6px; background:var(--border); border-radius:3px;"><div class="acc-fill" style="width:89.1%;"></div></div>
+          </div>
+        </div>
+
+        <div class="algo-card">
+          <div class="algo-icon"><i class="fa-solid fa-chart-line"></i></div>
+          <div class="algo-title">Logistic Regression</div>
+          <div class="algo-desc">Parametric probabilistic model mapping linear combinations of clinical predictors through a sigmoid function.</div>
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:700; margin-bottom:6px;">
+              <span>Accuracy</span><span>85.2%</span>
+            </div>
+            <div style="height:6px; background:var(--border); border-radius:3px;"><div class="acc-fill" style="width:85.2%;"></div></div>
+          </div>
+        </div>
+
+        <div class="algo-card">
+          <div class="algo-icon"><i class="fa-solid fa-diagram-project"></i></div>
+          <div class="algo-title">Decision Tree Classifier</div>
+          <div class="algo-desc">Non-parametric hierarchical decision splits using Gini impurity metrics for maximum clinical interpretability.</div>
+          <div>
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:700; margin-bottom:6px;">
+              <span>Accuracy</span><span>81.5%</span>
+            </div>
+            <div style="height:6px; background:var(--border); border-radius:3px;"><div class="acc-fill" style="width:81.5%;"></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PATIENT HISTORY SECTION -->
+  <section id="history-section">
+    <div class="max-w">
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; flex-wrap:wrap; gap:16px; margin-bottom:20px;">
+        <div>
+          <span class="section-tag"><i class="fa-solid fa-clock-rotate-left"></i> Audit Trail</span>
+          <h2 class="section-title" style="margin-bottom:0;">Local Assessment History</h2>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <button type="button" id="btnExportCSV" style="background:#ffffff; border:1px solid var(--border); padding:8px 16px; border-radius:var(--radius-sm); font-size:0.85rem; font-weight:600; cursor:pointer; color:var(--navy);"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+          <button type="button" id="btnClearHistory" style="background:#fee2e2; border:1px solid #fca5a5; padding:8px 16px; border-radius:var(--radius-sm); font-size:0.85rem; font-weight:600; cursor:pointer; color:var(--crimson-dark);"><i class="fa-solid fa-trash"></i> Clear</button>
+        </div>
+      </div>
+      <p class="section-desc">Recent risk evaluations stored securely in local browser storage.</p>
+
+      <div class="history-table-wrap">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Timestamp</th>
+              <th>Patient Age & Gender</th>
+              <th>BP / Chol</th>
+              <th>Risk Classification</th>
+              <th>Algorithm Used</th>
+              <th>Print</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody">
+            <!-- Dynamically populated via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="max-w footer-grid">
+      <div class="footer-brand">
+        <a href="#home" class="nav-brand"><div class="brand-heart-badge"><i class="fa-solid fa-heart-pulse"></i></div> CardioAI</a>
+        <p>A clinical-grade machine learning application for heart disease risk estimation. Designed for informational and screening aid purposes.</p>
+      </div>
+
+      <div class="footer-col">
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="#home">Home</a></li>
+          <li><a href="#about">About System</a></li>
+          <li><a href="#prediction">Risk Assessment</a></li>
+          <li><a href="#models">ML Models</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <ul>
+          <li><a href="https://archive.ics.uci.edu/dataset/45/heart+disease" target="_blank">UCI Cleveland Dataset</a></li>
+          <li><a href="#prediction">SHAP Breakdown</a></li>
+          <li><a href="#models">Model Accuracy Metrics</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Contact & Legal</h4>
+        <ul>
+          <li><a href="mailto:support@cardioai.med"><i class="fa-solid fa-envelope"></i> support@cardioai.med</a></li>
+          <li><a href="#"><i class="fa-solid fa-shield-halved"></i> HIPAA & Privacy Compliance</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="max-w footer-bottom">
+      <span>© 2025 CardioAI System. All rights reserved.</span>
+      <span>Medical Disclaimer: Not a substitute for professional medical advice or emergency care.</span>
+    </div>
+  </footer>
+
+  <!-- Modular Scripts -->
+  <script src="js/ml-engine.js"></script>
+  <script src="js/ecg.js"></script>
+  <script src="js/report.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
